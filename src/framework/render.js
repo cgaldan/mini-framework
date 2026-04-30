@@ -1,0 +1,130 @@
+import { VDOM } from "./vdom.js";
+
+export function createElement(VDOM) {
+    if (typeof VDOM === "string" || typeof VDOM === "number") {
+        return document.createTextNode(String(VDOM));
+    }
+
+    const element = document.createElement(VDOM.tag);
+    
+    Object.entries(VDOM.attrs || {}).forEach(([key, value]) => {
+        setAttribute(element, key, value);
+    });
+
+    (VDOM.children || []).forEach(child => {
+        element.appendChild(createElement(child));
+    });
+
+    return element;
+}
+
+export function patch(parent, oldVDOM, newVDOM, index = 0) {
+    if (!oldVDOM) {
+      parent.appendChild(createElement(newVDOM));
+      return;
+    }
+  
+    const element = parent.childNodes[index];
+  
+    if (!newVDOM) {
+      if (element) {
+        parent.removeChild(element);
+      }
+      return;
+    }
+  
+    if (typeof oldVDOM === 'string' && typeof newVDOM === 'string') {
+      if (oldVDOM !== newVDOM) {
+        element.textContent = newVDOM;
+      }
+      return;
+    }
+  
+    if (
+      typeof oldVDOM !== typeof newVDOM ||
+      (oldVDOM instanceof VDOM && newVDOM instanceof VDOM && oldVDOM.tag !== newVDOM.tag)
+    ) {
+      parent.replaceChild(createElement(newVDOM), element);
+      return;
+    }
+  
+    if (newVDOM instanceof VDOM) {
+      updateAttribute(element, oldVDOM.attrs, newVDOM.attrs);
+  
+      const oldChildren = oldVDOM.children || [];
+      const newChildren = newVDOM.children || [];
+      const maxLength = Math.max(oldChildren.length, newChildren.length);
+  
+      for (let i = 0; i < maxLength; i++) {
+        patch(element, oldChildren[i], newChildren[i], i);
+      }
+    }
+  }
+
+export function render(VDOM, container) {
+    container.innerHTML = '';
+    container.appendChild(createElement(VDOM));
+}
+
+function setAttribute(element, key, value) {
+    if (key === "className") {
+        element.className = value;
+        return;
+    }
+
+    if (key === "style" && typeof value === "object") {
+        Object.assign(element.style, value);
+        return;
+    }
+
+    if (key === "value") {
+        element.value = value;
+        return;
+    }
+
+    if (key === "checked") {
+        element.checked = value;
+        return;
+    }
+
+    if (value === true) {
+        element.setAttribute(key, "");
+    } else if (value === false || value === null || value === undefined) {
+        element.removeAttribute(key);
+    } else {
+        element.setAttribute(key, value);
+    }
+}
+
+function removeAttribute(element, key, oldValue) {
+    if (key === "className") {
+        element.className = "";
+        return;
+    }
+
+    if (key === "value") {
+        element.value = "";
+        return;
+    }
+
+    if (key === "checked") {
+        element.checked = false;
+        return;
+    }
+
+    element.removeAttribute(key);
+}
+
+function updateAttribute(element, oldAttrs = {}, newAttrs = {}) {
+    Object.keys(oldAttrs).forEach(key => {
+        if (!(key in newAttrs)) {
+            removeAttribute(element, key, oldAttrs[key]);
+        }
+    });
+
+    Object.keys(newAttrs).forEach(key => {
+        if (oldAttrs[key] !== newAttrs[key]) {
+            setAttribute(element, key, newAttrs[key]);
+        }
+    });
+}
