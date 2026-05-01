@@ -1,5 +1,3 @@
-export const version = "0.1.0";
+import pkg from "../../package.json" with { type: "json" };
 
-export function describeFramework() {
-    return "Mini Framework Phase 1 skeleton";
-}
+export const version = pkg.version;

@@ -1,4 +1,5 @@
 import { VDOM } from "./vdom.js";
+import { eventManager } from "./events.js";
 
 export function createElement(VDOM) {
     if (typeof VDOM === "string" || typeof VDOM === "number") {
@@ -67,6 +68,12 @@ export function render(VDOM, container) {
 }
 
 function setAttribute(element, key, value) {
+    if (key.startsWith("on") && typeof value === "function") {
+        const eventType = key.substring(2).toLowerCase();
+        eventManager.on(element, eventType, value);
+        return;
+    }
+    
     if (key === "className") {
         element.className = value;
         return;
@@ -97,6 +104,12 @@ function setAttribute(element, key, value) {
 }
 
 function removeAttribute(element, key, oldValue) {
+    if (key.startsWith("on") && typeof oldValue === "function") {
+        const eventType = key.substring(2).toLowerCase();
+        eventManager.off(element, eventType, oldValue);
+        return;
+    }
+
     if (key === "className") {
         element.className = "";
         return;
