@@ -1,6 +1,6 @@
 {
     "name": "mini-framework",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "description": "A mini framework for building web applications",
     "private": true,
     "type": "module",
