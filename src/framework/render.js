@@ -29,6 +29,7 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
   
     if (!newVDOM) {
       if (element) {
+        eventManager.off(element);
         parent.removeChild(element);
       }
       return;
@@ -45,6 +46,7 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
       typeof oldVDOM !== typeof newVDOM ||
       (oldVDOM instanceof VDOM && newVDOM instanceof VDOM && oldVDOM.tag !== newVDOM.tag)
     ) {
+      eventManager.off(element);
       parent.replaceChild(createElement(newVDOM), element);
       return;
     }
@@ -60,11 +62,15 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
         patch(element, oldChildren[i], newChildren[i], i);
       }
     }
-  }
+}
 
 export function render(VDOM, container) {
     container.innerHTML = '';
     container.appendChild(createElement(VDOM));
+
+    if (!eventManager.rootElement) {
+        eventManager.init(container);
+    }
 }
 
 function setAttribute(element, key, value) {
@@ -106,7 +112,7 @@ function setAttribute(element, key, value) {
 function removeAttribute(element, key, oldValue) {
     if (key.startsWith("on") && typeof oldValue === "function") {
         const eventType = key.substring(2).toLowerCase();
-        eventManager.off(element, eventType, oldValue);
+        eventManager.off(element, eventType);
         return;
     }
 
@@ -135,9 +141,9 @@ function updateAttribute(element, oldAttrs = {}, newAttrs = {}) {
         }
     });
 
-    Object.keys(newAttrs).forEach(key => {
-        if (oldAttrs[key] !== newAttrs[key]) {
-            setAttribute(element, key, newAttrs[key]);
+    Object.entries(newAttrs).forEach(([key, value]) => {
+        if (oldAttrs[key] !== value) {
+            setAttribute(element, key, value);
         }
     });
 }
