@@ -12,7 +12,7 @@ class EventManager {
     }
 
     setupDelegation() {
-        const eventTypes = ['click', 'input', 'change', 'submit', 'keydown', 'keyup', 'keypress', 'focus', 'dblclick'];
+        const eventTypes = ['click', 'input', 'change', 'submit', 'keydown', 'keyup', 'keypress', 'focus', 'focusout', 'dblclick'];
     
         eventTypes.forEach(type => {
             this.rootElement.addEventListener(type, (event) => this.handleEvent(event), true);
