@@ -100,6 +100,8 @@ function MainContent(state) {
 }
 
 function Footer(state) {
+    if (state.todos.length === 0) return null;
+
     const activeCount = state.todos.filter(t => !t.completed).length;
     const completedCount = state.todos.length - activeCount;
     const f = state.filter;
