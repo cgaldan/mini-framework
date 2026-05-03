@@ -303,6 +303,7 @@ button {
 .view label {
     line-height: 1.45;
     overflow-wrap: anywhere;
+    white-space: pre-wrap;
 }
 
 .completed .view label {
@@ -337,11 +338,13 @@ button {
 .edit {
     display: none;
     width: 100%;
+    resize: none;
     padding: 0.7rem;
     border: 0;
     border-radius: 0.7rem;
     background: rgba(255, 255, 255, 0.5);
     color: var(--note-text);
+    line-height: 1.45;
 }
 
 .editing .view {

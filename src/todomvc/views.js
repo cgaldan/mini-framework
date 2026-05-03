@@ -169,11 +169,12 @@ function TodoItem(state, todo, index) {
             }),
         ),
         state.editingTodoId === todo.id
-            ? createVDOM("input", {
+            ? createVDOM("textarea", {
                 id: `todo-edit-${todo.id}`,
                 name: `todo-edit-${todo.id}`,
                 className: "edit",
                 value: todo.text,
+                rows: "4",
                 onKeyDown: event => handleEditKeyDown(event, todo.id),
                 onFocusOut: event => {
                     if (store.getState().editingTodoId !== todo.id) return;
@@ -197,6 +198,7 @@ function NewTodoItem() {
             placeholder: "What needs to be done?",
             rows: "4",
             autoFocus: true,
+            onKeyDown: handleNewTodoKeyDown,
         }),
         createVDOM("button", { className: "add-todo", onClick: addTodo }, "+"),
     );
@@ -216,8 +218,16 @@ function addTodo() {
     input.value = "";
 }
 
+function handleNewTodoKeyDown(event) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+
+    event.preventDefault();
+    addTodo();
+}
+
 function handleEditKeyDown(event, id) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
         store.dispatch({
             type: "COMMIT_EDIT",
             id,
