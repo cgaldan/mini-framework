@@ -1,10 +1,17 @@
 export class Router {
     constructor(routes = {}, store = null) {
+        if (!routes || typeof routes !== "object") {
+            throw new TypeError("Router requires a routes object.");
+        }
+
         this.routes = routes;
         this.store = store;
         this.currentRoute = null;
         this.listeners = new Set();
-        this.init();
+
+        if (typeof window !== "undefined") {
+            this.init();
+        }
     }
 
     init() {
@@ -16,23 +23,25 @@ export class Router {
     handleRouteChange() {
         const hash = window.location.hash.slice(1) || '/';
         const route = this.matchRoute(hash);
-        
-        if (route) {
-            this.currentRoute = route;
 
-            if (this.store) {
-                this.store.dispatch({
-                    type: 'ROUTE_CHANGE',
-                    payload: { route: route.path, params: route.params }
-                });
-            }
-            
-            if (route.handler) {
-                route.handler(route.params);
-            }
-
-            this.notify(route);
+        if (!route) {
+            throw new Error(`Route not found: ${hash}`);
         }
+        
+        this.currentRoute = route;
+
+        if (this.store) {
+            this.store.dispatch({
+                type: 'ROUTE_CHANGE',
+                payload: { route: route.path, params: route.params }
+            });
+        }
+        
+        if (route.handler) {
+            route.handler(route.params);
+        }
+
+        this.notify(route);
     }
 
     matchRoute(hash) {
@@ -90,6 +99,10 @@ export class Router {
     }
     
     navigate(path) {
+        if (typeof path !== "string" || !path.startsWith("/")) {
+            throw new TypeError('router.navigate(path) requires a path string starting with "/".');
+        }
+
         window.location.hash = path;
     }
 
