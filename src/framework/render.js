@@ -56,10 +56,18 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
   
       const oldChildren = oldVDOM.children || [];
       const newChildren = newVDOM.children || [];
-      const maxLength = Math.max(oldChildren.length, newChildren.length);
+      const commonLength = Math.min(oldChildren.length, newChildren.length);
   
-      for (let i = 0; i < maxLength; i++) {
+      for (let i = 0; i < commonLength; i++) {
         patch(element, oldChildren[i], newChildren[i], i);
+      }
+
+      for (let i = commonLength; i < newChildren.length; i++) {
+        patch(element, null, newChildren[i], i);
+      }
+
+      for (let i = oldChildren.length - 1; i >= newChildren.length; i--) {
+        patch(element, oldChildren[i], null, i);
       }
     }
 }
