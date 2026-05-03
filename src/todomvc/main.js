@@ -1,10 +1,25 @@
 import { render, patch } from "../framework/render.js";
 import { eventManager } from "../framework/events.js";
+import { createRouter } from "../framework/router.js";
 import { App } from "./views.js";
 import { createStore } from "../framework/store.js";
 import { todoReducer, initialState } from "./reducer.js";
 
 export const store = createStore(todoReducer, initialState);
+
+function setFilter(filter) {
+    store.dispatch({ type: "SET_FILTER", filter });
+}
+
+const routes = {
+    "/": () => setFilter("all"),
+    "/active": () => setFilter("active"),
+    "/completed": () => setFilter("completed"),
+};
+
+export const router = createRouter(routes);
+router.register("*", () => router.navigate("/"));
+router.handleRouteChange();
 
 const root = document.getElementById("todo-app");
 eventManager.init(root);

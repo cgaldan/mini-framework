@@ -1,6 +1,6 @@
 import { createVDOM } from "../framework/vdom.js";
 import { version } from "../framework/index.js";
-import { store } from "./main.js";
+import { router, store } from "./main.js";
 
 export function App(state) {
     return createVDOM("div", { className: "app-shell" },
@@ -10,6 +10,7 @@ export function App(state) {
         createVDOM("section", { className: "todoapp" },
             Header(),
             MainContent(state),
+            Footer(state),
         ),
         createVDOM("footer", { className: "info" },
             createVDOM("p", {}, `Built with custom Mini framework v${version}`),
@@ -33,14 +34,48 @@ function MainContent(state) {
     );
 }
 
+function Footer(state) {
+    const activeCount = state.todos.filter(t => !t.completed).length;
+    const f = state.filter;
+    const linkClass = key => [f === key && "selected"].filter(Boolean).join(" ");
+
+    return createVDOM("footer", { className: "footer" },
+        createVDOM("span", { className: "todo-count" },
+            createVDOM("strong", {}, String(activeCount)),
+            ` ${activeCount === 1 ? "item" : "items"} left`,
+        ),
+        createVDOM("ul", { className: "filters" },
+            FilterLink("/", "All", linkClass("all")),
+            FilterLink("/active", "Active", linkClass("active")),
+            FilterLink("/completed", "Completed", linkClass("completed")),
+        ),
+    );
+}
+
+function FilterLink(path, label, className) {
+    return createVDOM("li", {},
+        createVDOM("a", {
+            href: `#${path}`,
+            className,
+            onClick: event => {
+                event.preventDefault();
+                router.navigate(path);
+            },
+        }, label),
+    );
+}
+
 function TodoItem(state, todo, index) {
+    const isHidden =
+        (state.filter === "active" && todo.completed) ||
+        (state.filter === "completed" && !todo.completed);
     const classNames = [
         todo.completed ? "completed" : "",
         state.editingTodoId === todo.id ? "editing" : "",
         `todo-note--${(index % 4) + 1}`,
     ].filter(Boolean).join(" ");
 
-    return createVDOM("li", { className: classNames },
+    return createVDOM("li", { className: classNames, style: { display: isHidden ? "none" : "" } },
         createVDOM("div", { className: "view" },
             createVDOM("input", {
                 className: "toggle",
