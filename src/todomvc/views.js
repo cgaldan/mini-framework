@@ -7,10 +7,23 @@ export function App(state) {
         createVDOM("div", { className: "ambient-glow ambient-glow--one" }),
         createVDOM("div", { className: "ambient-glow ambient-glow--two" }),
         createVDOM("div", { className: "ambient-glow ambient-glow--three" }),
-        createVDOM("section", { className: "todoapp" },
+        SiteNav(state),
+        PagePanel("home", state.page,
+            HomePage(),
+        ),
+        createVDOM("section", {
+            className: "todoapp",
+            style: { display: state.page === "todos" ? "" : "none" },
+        },
             Header(),
             MainContent(state),
             Footer(state),
+        ),
+        PagePanel("about", state.page,
+            AboutPage(),
+        ),
+        PagePanel("not-found", state.page,
+            NotFoundPage(),
         ),
         createVDOM("footer", { className: "info" },
             createVDOM("p", {}, `Built with custom Mini framework v${version}`),
@@ -22,6 +35,58 @@ export function App(state) {
 function Header() {
     return createVDOM("header", { className: "header" },
         createVDOM("h1", {}, "ToDo MVC"),
+    );
+}
+
+function SiteNav(state) {
+    const linkClass = page => [state.page === page && "selected"].filter(Boolean).join(" ");
+
+    return createVDOM("nav", { className: "site-nav" },
+        NavLink("/", "Home", linkClass("home")),
+        NavLink("/todos", "Todos", linkClass("todos")),
+        NavLink("/about", "About", linkClass("about")),
+    );
+}
+
+function NavLink(path, label, className) {
+    return createVDOM("a", {
+        href: `#${path}`,
+        className,
+        onClick: event => {
+            event.preventDefault();
+            router.navigate(path);
+        },
+    }, label);
+}
+
+function PagePanel(page, activePage, ...children) {
+    return createVDOM("section", {
+        className: `page-panel page-panel--${page}`,
+        style: { display: activePage === page ? "" : "none" },
+    }, ...children);
+}
+
+function HomePage() {
+    return createVDOM("div", { className: "page-card" },
+        createVDOM("h1", {}, "ToDoMVC"),
+        createVDOM("p", {}, "A small demo todoMVC app for testing my mini framework."),
+        createVDOM("button", { className: "page-action", onClick: () => router.navigate("/todos") }, "Open Todos"),
+    );
+}
+
+function AboutPage() {
+    return createVDOM("div", { className: "page-card" },
+        createVDOM("h1", {}, "About"),
+        createVDOM("p", {}, "This app is built with the custom Mini framework."),
+        createVDOM("p", {}, "The router controls these simple pages and the TodoMVC filters."),
+    );
+}
+
+function NotFoundPage() {
+    return createVDOM("div", { className: "page-card" },
+        createVDOM("h1", {}, "404 - Not Found"),
+        createVDOM("p", {}, "That route does not exist."),
+        createVDOM("button", { className: "page-action", onClick: () => router.navigate("/") }, "Go Home"),
     );
 }
 
@@ -45,7 +110,7 @@ function Footer(state) {
             ` ${activeCount === 1 ? "item" : "items"} left`,
         ),
         createVDOM("ul", { className: "filters" },
-            FilterLink("/", "All", linkClass("all")),
+            FilterLink("/todos", "All", linkClass("all")),
             FilterLink("/active", "Active", linkClass("active")),
             FilterLink("/completed", "Completed", linkClass("completed")),
         ),

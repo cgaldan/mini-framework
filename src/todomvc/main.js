@@ -7,18 +7,20 @@ import { todoReducer, initialState } from "./reducer.js";
 
 export const store = createStore(todoReducer, initialState);
 
-function setFilter(filter) {
-    store.dispatch({ type: "SET_FILTER", filter });
+function setPage(page, filter) {
+    store.dispatch({ type: "SET_PAGE", page, filter });
 }
 
 const routes = {
-    "/": () => setFilter("all"),
-    "/active": () => setFilter("active"),
-    "/completed": () => setFilter("completed"),
+    "/": () => setPage("home"),
+    "/todos": () => setPage("todos", "all"),
+    "/active": () => setPage("todos", "active"),
+    "/completed": () => setPage("todos", "completed"),
+    "/about": () => setPage("about"),
 };
 
 export const router = createRouter(routes);
-router.register("*", () => router.navigate("/"));
+router.register("*", () => setPage("not-found"));
 router.handleRouteChange();
 
 const root = document.getElementById("todo-app");
