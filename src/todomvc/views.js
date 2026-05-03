@@ -101,6 +101,7 @@ function MainContent(state) {
 
 function Footer(state) {
     const activeCount = state.todos.filter(t => !t.completed).length;
+    const completedCount = state.todos.length - activeCount;
     const f = state.filter;
     const linkClass = key => [f === key && "selected"].filter(Boolean).join(" ");
 
@@ -114,6 +115,12 @@ function Footer(state) {
             FilterLink("/active", "Active", linkClass("active")),
             FilterLink("/completed", "Completed", linkClass("completed")),
         ),
+        completedCount > 0
+            ? createVDOM("button", {
+                className: "clear-completed",
+                onClick: () => store.dispatch({ type: "CLEAR_COMPLETED" }),
+            }, "Clear completed")
+            : null,
     );
 }
 

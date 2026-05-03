@@ -32,6 +32,17 @@ export function todoReducer(state = initialState, action) {
                 ...state,
                 todos: state.todos.filter(todo => todo.id !== action.id),
             };
+        case "CLEAR_COMPLETED": {
+            const isEditingCompletedTodo = state.todos.some(todo =>
+                todo.id === state.editingTodoId && todo.completed
+            );
+
+            return {
+                ...state,
+                todos: state.todos.filter(todo => !todo.completed),
+                editingTodoId: isEditingCompletedTodo ? null : state.editingTodoId,
+            };
+        }
         case "START_EDITING":
             return { ...state, editingTodoId: action.id };
         case "CANCEL_EDIT":
