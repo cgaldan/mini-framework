@@ -1,6 +1,8 @@
 export const initialState = {
     todos: [],
     editingTodoId: null,
+    page: "home",
+    filter: "all",
 };
 
 export function todoReducer(state = initialState, action) {
@@ -34,6 +36,12 @@ export function todoReducer(state = initialState, action) {
             return { ...state, editingTodoId: action.id };
         case "CANCEL_EDIT":
             return { ...state, editingTodoId: null };
+        case "SET_PAGE":
+            return {
+                ...state,
+                page: action.page,
+                filter: action.filter ?? state.filter,
+            };
         case "COMMIT_EDIT": {
             const text = action.text.trim();
             if (!text) {
