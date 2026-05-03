@@ -199,6 +199,11 @@ button {
 }
 
 .toggle-all {
+    position: absolute;
+    opacity: 0;
+}
+
+.toggle-all-label {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -209,9 +214,10 @@ button {
     background: rgba(255, 255, 255, 0.08);
     color: var(--muted-text);
     font-size: 0.9rem;
+    cursor: pointer;
 }
 
-.toggle-all::before {
+.toggle-all-label::before {
     content: "";
     width: 1rem;
     height: 1rem;
@@ -220,11 +226,12 @@ button {
     background: var(--panel);
 }
 
-.toggle-all:hover {
+.toggle-all-label:hover {
     background: rgba(255, 255, 255, 0.14);
 }
 
-.toggle-all:hover::before {
+.toggle-all:checked + .toggle-all-label::before,
+.toggle-all-label:hover::before {
     background: var(--warm);
     border-color: var(--warm);
 }
@@ -341,7 +348,6 @@ button {
 .edit {
     display: none;
     width: 100%;
-    resize: none;
     padding: 0.7rem;
     border: 0;
     border-radius: 0.7rem;
