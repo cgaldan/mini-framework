@@ -27,6 +27,14 @@ export function todoReducer(state = initialState, action) {
                     todo.id === action.id ? { ...todo, completed: !todo.completed } : todo
                 ),
             };
+        case "TOGGLE_ALL_TODOS": {
+            const shouldCompleteTodos = state.todos.some(todo => !todo.completed);
+
+            return {
+                ...state,
+                todos: state.todos.map(todo => ({ ...todo, completed: shouldCompleteTodos })),
+            };
+        }
         case "REMOVE_TODO":
             return {
                 ...state,

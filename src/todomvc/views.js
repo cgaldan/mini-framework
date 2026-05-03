@@ -91,7 +91,15 @@ function NotFoundPage() {
 }
 
 function MainContent(state) {
+    const allCompleted = state.todos.length > 0 && state.todos.every(todo => todo.completed);
+
     return createVDOM("section", { className: "main" },
+        state.todos.length > 0
+            ? createVDOM("button", {
+                className: "toggle-all",
+                onClick: () => store.dispatch({ type: "TOGGLE_ALL_TODOS" }),
+            }, allCompleted ? "Mark all as active" : "Mark all as completed")
+            : null,
         createVDOM("ul", { className: "todo-list" },
             ...state.todos.map((todo, index) => TodoItem(state, todo, index)),
             NewTodoItem(),
