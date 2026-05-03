@@ -143,12 +143,17 @@ function TodoItem(state, todo, index) {
     return createVDOM("li", { className: classNames, style: { display: isHidden ? "none" : "" } },
         createVDOM("div", { className: "view" },
             createVDOM("input", {
+                id: `todo-toggle-${todo.id}`,
+                name: `todo-toggle-${todo.id}`,
                 className: "toggle",
                 type: "checkbox",
                 checked: todo.completed,
                 onChange: () => store.dispatch({ type: "TOGGLE_TODO", id: todo.id }),
             }),
-            createVDOM("label", { onDblClick: () => store.dispatch({ type: "START_EDITING", id: todo.id }) }, todo.text),
+            createVDOM("label", {
+                for: `todo-toggle-${todo.id}`,
+                onDblClick: () => store.dispatch({ type: "START_EDITING", id: todo.id }),
+            }, todo.text),
             createVDOM("button", {
                 className: "destroy",
                 onClick: () => store.dispatch({ type: "REMOVE_TODO", id: todo.id }),
@@ -156,6 +161,8 @@ function TodoItem(state, todo, index) {
         ),
         state.editingTodoId === todo.id
             ? createVDOM("input", {
+                id: `todo-edit-${todo.id}`,
+                name: `todo-edit-${todo.id}`,
                 className: "edit",
                 value: todo.text,
                 onKeyDown: event => handleEditKeyDown(event, todo.id),
@@ -175,6 +182,8 @@ function TodoItem(state, todo, index) {
 function NewTodoItem() {
     return createVDOM("li", { className: "todo-draft" },
         createVDOM("textarea", {
+            id: "new-todo",
+            name: "new-todo",
             className: "new-todo",
             placeholder: "What needs to be done?",
             rows: "4",
