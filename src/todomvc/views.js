@@ -2,6 +2,8 @@ import { createVDOM } from "../framework/vdom.js";
 import { version } from "../framework/index.js";
 import { router, store } from "./main.js";
 
+let newTodoDraft = "";
+
 export function App(state) {
     return createVDOM("div", { className: "app-shell" },
         createVDOM("div", { className: "ambient-glow ambient-glow--one" }),
@@ -91,16 +93,38 @@ function NotFoundPage() {
 }
 
 function MainContent(state) {
+    const allCompleted = state.todos.length > 0 && state.todos.every(todo => todo.completed);
+    const visibleTodos = state.todos.filter(todo => {
+        if (state.filter === "active") return !todo.completed;
+        if (state.filter === "completed") return todo.completed;
+        return true;
+    });
+
     return createVDOM("section", { className: "main" },
+        state.todos.length > 0
+            ? [
+                createVDOM("input", {
+                    id: "toggle-all",
+                    className: "toggle-all",
+                    type: "checkbox",
+                    checked: allCompleted,
+                    onChange: () => store.dispatch({ type: "TOGGLE_ALL_TODOS" }),
+                }),
+                createVDOM("label", { className: "toggle-all-label", for: "toggle-all" }, "Mark all as complete"),
+            ]
+            : null,
         createVDOM("ul", { className: "todo-list" },
-            ...state.todos.map((todo, index) => TodoItem(state, todo, index)),
+            ...visibleTodos.map((todo, index) => TodoItem(state, todo, index)),
             NewTodoItem(),
         ),
     );
 }
 
 function Footer(state) {
+    if (state.todos.length === 0) return null;
+
     const activeCount = state.todos.filter(t => !t.completed).length;
+    const completedCount = state.todos.length - activeCount;
     const f = state.filter;
     const linkClass = key => [f === key && "selected"].filter(Boolean).join(" ");
 
@@ -114,6 +138,12 @@ function Footer(state) {
             FilterLink("/active", "Active", linkClass("active")),
             FilterLink("/completed", "Completed", linkClass("completed")),
         ),
+        completedCount > 0
+            ? createVDOM("button", {
+                className: "clear-completed",
+                onClick: () => store.dispatch({ type: "CLEAR_COMPLETED" }),
+            }, "Clear completed")
+            : null,
     );
 }
 
@@ -131,40 +161,46 @@ function FilterLink(path, label, className) {
 }
 
 function TodoItem(state, todo, index) {
-    const isHidden =
-        (state.filter === "active" && todo.completed) ||
-        (state.filter === "completed" && !todo.completed);
     const classNames = [
+        "todo",
         todo.completed ? "completed" : "",
         state.editingTodoId === todo.id ? "editing" : "",
         `todo-note--${(index % 4) + 1}`,
     ].filter(Boolean).join(" ");
 
-    return createVDOM("li", { className: classNames, style: { display: isHidden ? "none" : "" } },
+    return createVDOM("li", { className: classNames },
         createVDOM("div", { className: "view" },
             createVDOM("input", {
+                id: `todo-toggle-${todo.id}`,
+                name: `todo-toggle-${todo.id}`,
                 className: "toggle",
                 type: "checkbox",
                 checked: todo.completed,
                 onChange: () => store.dispatch({ type: "TOGGLE_TODO", id: todo.id }),
             }),
-            createVDOM("label", { onDblClick: () => store.dispatch({ type: "START_EDITING", id: todo.id }) }, todo.text),
+            createVDOM("label", {
+                for: `todo-toggle-${todo.id}`,
+                onDblClick: () => store.dispatch({ type: "START_EDITING", id: todo.id }),
+            }, todo.title),
             createVDOM("button", {
                 className: "destroy",
                 onClick: () => store.dispatch({ type: "REMOVE_TODO", id: todo.id }),
             }),
         ),
         state.editingTodoId === todo.id
-            ? createVDOM("input", {
+            ? createVDOM("textarea", {
+                id: `todo-edit-${todo.id}`,
+                name: `todo-edit-${todo.id}`,
                 className: "edit",
-                value: todo.text,
+                value: todo.title,
+                rows: "4",
                 onKeyDown: event => handleEditKeyDown(event, todo.id),
                 onFocusOut: event => {
                     if (store.getState().editingTodoId !== todo.id) return;
                     store.dispatch({
                         type: "COMMIT_EDIT",
                         id: todo.id,
-                        text: event.target.value,
+                        title: event.target.value,
                     });
                 },
             })
@@ -175,35 +211,53 @@ function TodoItem(state, todo, index) {
 function NewTodoItem() {
     return createVDOM("li", { className: "todo-draft" },
         createVDOM("textarea", {
+            id: "new-todo",
+            name: "new-todo",
             className: "new-todo",
             placeholder: "What needs to be done?",
             rows: "4",
             autoFocus: true,
+            onInput: event => {
+                newTodoDraft = event.target.value;
+            },
+            onKeyDown: handleNewTodoKeyDown,
         }),
-        createVDOM("button", { className: "add-todo", onClick: addTodo }, "+"),
+        createVDOM("button", {
+            className: "add-todo",
+            type: "button",
+            onClick: () => addTodo(newTodoDraft),
+        }, "+"),
     );
 }
 
-function addTodo() {
-    const input = document.querySelector(".new-todo");
-    const text = input.value.trim();
+function addTodo(title) {
+    const trimmedTitle = title.trim();
 
-    if (!text) return;
+    if (!trimmedTitle) return;
 
     store.dispatch({
         type: "ADD_TODO",
         id: Date.now(),
-        text: text,
+        title: trimmedTitle,
     });
-    input.value = "";
+
+    newTodoDraft = "";
+}
+
+function handleNewTodoKeyDown(event) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+
+    event.preventDefault();
+    addTodo(event.target.value);
 }
 
 function handleEditKeyDown(event, id) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
         store.dispatch({
             type: "COMMIT_EDIT",
             id,
-            text: event.target.value,
+            title: event.target.value,
         });
     }
     if (event.key === "Escape") {

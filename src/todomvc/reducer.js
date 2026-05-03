@@ -10,13 +10,13 @@ export function todoReducer(state = initialState, action) {
         case "@@INIT":
             return state;
         case "ADD_TODO": {
-            const text = action.text.trim();
-            if (!text) return state;
+            const title = (action.title ?? action.text ?? "").trim();
+            if (!title) return state;
             return {
                 ...state,
                 todos: [
                     ...state.todos,
-                    { id: action.id, text, completed: false },
+                    { id: action.id, title, completed: false },
                 ],
             };
         }
@@ -27,11 +27,30 @@ export function todoReducer(state = initialState, action) {
                     todo.id === action.id ? { ...todo, completed: !todo.completed } : todo
                 ),
             };
+        case "TOGGLE_ALL_TODOS": {
+            const shouldCompleteTodos = state.todos.some(todo => !todo.completed);
+
+            return {
+                ...state,
+                todos: state.todos.map(todo => ({ ...todo, completed: shouldCompleteTodos })),
+            };
+        }
         case "REMOVE_TODO":
             return {
                 ...state,
                 todos: state.todos.filter(todo => todo.id !== action.id),
             };
+        case "CLEAR_COMPLETED": {
+            const isEditingCompletedTodo = state.todos.some(todo =>
+                todo.id === state.editingTodoId && todo.completed
+            );
+
+            return {
+                ...state,
+                todos: state.todos.filter(todo => !todo.completed),
+                editingTodoId: isEditingCompletedTodo ? null : state.editingTodoId,
+            };
+        }
         case "START_EDITING":
             return { ...state, editingTodoId: action.id };
         case "CANCEL_EDIT":
@@ -43,8 +62,8 @@ export function todoReducer(state = initialState, action) {
                 filter: action.filter ?? state.filter,
             };
         case "COMMIT_EDIT": {
-            const text = action.text.trim();
-            if (!text) {
+            const title = (action.title ?? action.text ?? "").trim();
+            if (!title) {
                 return {
                     ...state,
                     todos: state.todos.filter(todo => todo.id !== action.id),
@@ -54,7 +73,7 @@ export function todoReducer(state = initialState, action) {
             return {
                 ...state,
                 todos: state.todos.map(todo =>
-                    todo.id === action.id ? { ...todo, text } : todo
+                    todo.id === action.id ? { ...todo, title } : todo
                 ),
                 editingTodoId: null,
             };

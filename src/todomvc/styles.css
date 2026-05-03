@@ -203,16 +203,21 @@ button {
     opacity: 0;
 }
 
-.toggle-all + label {
+.toggle-all-label {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
     margin-bottom: 1rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(244, 238, 230, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
     color: var(--muted-text);
     font-size: 0.9rem;
+    cursor: pointer;
 }
 
-.toggle-all + label::before {
+.toggle-all-label::before {
     content: "";
     width: 1rem;
     height: 1rem;
@@ -221,7 +226,12 @@ button {
     background: var(--panel);
 }
 
-.toggle-all:checked + label::before {
+.toggle-all-label:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.toggle-all:checked + .toggle-all-label::before,
+.toggle-all-label:hover::before {
     background: var(--warm);
     border-color: var(--warm);
 }
@@ -303,6 +313,7 @@ button {
 .view label {
     line-height: 1.45;
     overflow-wrap: anywhere;
+    white-space: pre-wrap;
 }
 
 .completed .view label {
@@ -342,6 +353,7 @@ button {
     border-radius: 0.7rem;
     background: rgba(255, 255, 255, 0.5);
     color: var(--note-text);
+    line-height: 1.45;
 }
 
 .editing .view {
