@@ -8,7 +8,6 @@ export class VDOM {
 
 export function createVDOM(tag, attrs = {}, ...children) {
     const flattenedChildren = fragment(children);
-    console.log(flattenedChildren);
 
     return new VDOM(tag, attrs, flattenedChildren);
 }

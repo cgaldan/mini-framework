@@ -2,6 +2,8 @@ import { VDOM } from "./vdom.js";
 import { eventManager } from "./events.js";
 
 export function createElement(VDOM) {
+    assertValidVNode(VDOM);
+
     if (typeof VDOM === "string" || typeof VDOM === "number") {
         return document.createTextNode(String(VDOM));
     }
@@ -20,6 +22,10 @@ export function createElement(VDOM) {
 }
 
 export function patch(parent, oldVDOM, newVDOM, index = 0) {
+    if (!parent) {
+      throw new Error("patch requires a parent DOM element.");
+    }
+
     if (!oldVDOM) {
       parent.appendChild(createElement(newVDOM));
       return;
@@ -73,11 +79,24 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
 }
 
 export function render(VDOM, container) {
+    if (!container) {
+        throw new Error("render requires a container DOM element.");
+    }
+
     container.innerHTML = '';
     container.appendChild(createElement(VDOM));
 
     if (!eventManager.rootElement) {
         eventManager.init(container);
+    }
+}
+
+export function assertValidVNode(vnode) {
+    const isTextNode = typeof vnode === "string" || typeof vnode === "number";
+    const isElementNode = vnode instanceof VDOM && typeof vnode.tag === "string" && vnode.tag.length > 0;
+
+    if (!isTextNode && !isElementNode) {
+        throw new TypeError("Invalid virtual node. Use createVDOM(tag, attrs, ...children) or a text value.");
     }
 }
 
