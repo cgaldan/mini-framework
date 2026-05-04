@@ -2,6 +2,8 @@ import { VDOM } from "./vdom.js";
 import { eventManager } from "./events.js";
 
 export function createElement(VDOM) {
+    assertValidVNode(VDOM);
+
     if (typeof VDOM === "string" || typeof VDOM === "number") {
         return document.createTextNode(String(VDOM));
     }
@@ -20,6 +22,10 @@ export function createElement(VDOM) {
 }
 
 export function patch(parent, oldVDOM, newVDOM, index = 0) {
+    if (!parent) {
+      throw new Error("patch requires a parent DOM element.");
+    }
+
     if (!oldVDOM) {
       parent.appendChild(createElement(newVDOM));
       return;
@@ -56,20 +62,41 @@ export function patch(parent, oldVDOM, newVDOM, index = 0) {
   
       const oldChildren = oldVDOM.children || [];
       const newChildren = newVDOM.children || [];
-      const maxLength = Math.max(oldChildren.length, newChildren.length);
+      const commonLength = Math.min(oldChildren.length, newChildren.length);
   
-      for (let i = 0; i < maxLength; i++) {
+      for (let i = 0; i < commonLength; i++) {
         patch(element, oldChildren[i], newChildren[i], i);
+      }
+
+      for (let i = commonLength; i < newChildren.length; i++) {
+        patch(element, null, newChildren[i], i);
+      }
+
+      for (let i = oldChildren.length - 1; i >= newChildren.length; i--) {
+        patch(element, oldChildren[i], null, i);
       }
     }
 }
 
 export function render(VDOM, container) {
+    if (!container) {
+        throw new Error("render requires a container DOM element.");
+    }
+
     container.innerHTML = '';
     container.appendChild(createElement(VDOM));
 
     if (!eventManager.rootElement) {
         eventManager.init(container);
+    }
+}
+
+export function assertValidVNode(vnode) {
+    const isTextNode = typeof vnode === "string" || typeof vnode === "number";
+    const isElementNode = vnode instanceof VDOM && typeof vnode.tag === "string" && vnode.tag.length > 0;
+
+    if (!isTextNode && !isElementNode) {
+        throw new TypeError("Invalid virtual node. Use createVDOM(tag, attrs, ...children) or a text value.");
     }
 }
 

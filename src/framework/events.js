@@ -7,6 +7,14 @@ class EventManager {
     }
 
     init(root) {
+        if (!root) {
+            throw new Error("EventManager requires a root element.");
+        }
+
+        if (this.rootElement === root) {
+            return;
+        }
+
         this.rootElement = root;
         this.setupDelegation();
     }
@@ -61,6 +69,11 @@ class EventManager {
         const elementId = element.__eventId;
 
         if (elementId && this.listeners.has(elementId)) {
+            if (typeof type === "undefined") {
+                this.listeners.delete(elementId);
+                return;
+            }
+
             this.listeners.get(elementId).delete(type);
 
             if (this.listeners.get(elementId).size === 0) {

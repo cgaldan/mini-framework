@@ -1,8 +1,5 @@
-import { render, patch } from "../framework/render.js";
-import { eventManager } from "../framework/events.js";
-import { createRouter } from "../framework/router.js";
+import { createApp, createRouter, createStore } from "../framework/index.js";
 import { App } from "./views.js";
-import { createStore } from "../framework/store.js";
 import { todoReducer, initialState } from "./reducer.js";
 
 export const store = createStore(todoReducer, initialState);
@@ -17,20 +14,17 @@ const routes = {
     "/active": () => setPage("todos", "active"),
     "/completed": () => setPage("todos", "completed"),
     "/about": () => setPage("about"),
+    "*": () => setPage("not-found"),
 };
 
 export const router = createRouter(routes);
-router.register("*", () => setPage("not-found"));
-router.handleRouteChange();
 
 const root = document.getElementById("todo-app");
-eventManager.init(root);
-
-let currentVDOM = App(store.getState());
-render(currentVDOM, root);
-
-store.subscribe(() => {
-    const newVDOM = App(store.getState());
-    patch(root, currentVDOM, newVDOM);
-    currentVDOM = newVDOM;
+export const app = createApp({
+    root,
+    router,
+    store,
+    view: state => App(state),
 });
+
+app.mount();
