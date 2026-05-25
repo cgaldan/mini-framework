@@ -1,19 +1,19 @@
-import { createVDOM } from "../framework/vdom.js";
+import { h } from "../framework/index.js";
 import { version } from "../framework/index.js";
 import { router, store } from "./main.js";
 
 let newTodoDraft = "";
 
 export function App(state) {
-    return createVDOM("div", { className: "app-shell" },
-        createVDOM("div", { className: "ambient-glow ambient-glow--one" }),
-        createVDOM("div", { className: "ambient-glow ambient-glow--two" }),
-        createVDOM("div", { className: "ambient-glow ambient-glow--three" }),
+    return h("div", { className: "app-shell" },
+        h("div", { className: "ambient-glow ambient-glow--one" }),
+        h("div", { className: "ambient-glow ambient-glow--two" }),
+        h("div", { className: "ambient-glow ambient-glow--three" }),
         SiteNav(state),
         PagePanel("home", state.page,
             HomePage(),
         ),
-        createVDOM("section", {
+        h("section", {
             className: "todoapp",
             style: { display: state.page === "todos" ? "" : "none" },
         },
@@ -27,23 +27,23 @@ export function App(state) {
         PagePanel("not-found", state.page,
             NotFoundPage(),
         ),
-        createVDOM("footer", { className: "info" },
-            createVDOM("p", {}, `Built with custom Mini framework v${version}`),
-            createVDOM("p", {}, `All rights reserved © ${new Date().getFullYear()}`),
+        h("footer", { className: "info" },
+            h("p", {}, `Built with custom Mini framework v${version}`),
+            h("p", {}, `All rights reserved © ${new Date().getFullYear()}`),
         ),
     );
 }
 
 function Header() {
-    return createVDOM("header", { className: "header" },
-        createVDOM("h1", {}, "ToDo MVC"),
+    return h("header", { className: "header" },
+        h("h1", {}, "ToDo MVC"),
     );
 }
 
 function SiteNav(state) {
     const linkClass = page => [state.page === page && "selected"].filter(Boolean).join(" ");
 
-    return createVDOM("nav", { className: "site-nav" },
+    return h("nav", { className: "site-nav" },
         NavLink("/", "Home", linkClass("home")),
         NavLink("/todos", "Todos", linkClass("todos")),
         NavLink("/about", "About", linkClass("about")),
@@ -51,7 +51,7 @@ function SiteNav(state) {
 }
 
 function NavLink(path, label, className) {
-    return createVDOM("a", {
+    return h("a", {
         href: `#${path}`,
         className,
         onClick: event => {
@@ -62,33 +62,33 @@ function NavLink(path, label, className) {
 }
 
 function PagePanel(page, activePage, ...children) {
-    return createVDOM("section", {
+    return h("section", {
         className: `page-panel page-panel--${page}`,
         style: { display: activePage === page ? "" : "none" },
     }, ...children);
 }
 
 function HomePage() {
-    return createVDOM("div", { className: "page-card" },
-        createVDOM("h1", {}, "ToDoMVC"),
-        createVDOM("p", {}, "A small demo todoMVC app for testing my mini framework."),
-        createVDOM("button", { className: "page-action", onClick: () => router.navigate("/todos") }, "Open Todos"),
+    return h("div", { className: "page-card" },
+        h("h1", {}, "ToDoMVC"),
+        h("p", {}, "A small demo todoMVC app for testing my mini framework."),
+        h("button", { className: "page-action", onClick: () => router.navigate("/todos") }, "Open Todos"),
     );
 }
 
 function AboutPage() {
-    return createVDOM("div", { className: "page-card" },
-        createVDOM("h1", {}, "About"),
-        createVDOM("p", {}, "This app is built with the custom Mini framework."),
-        createVDOM("p", {}, "The router controls these simple pages and the TodoMVC filters."),
+    return h("div", { className: "page-card" },
+        h("h1", {}, "About"),
+        h("p", {}, "This app is built with the custom Mini framework."),
+        h("p", {}, "The router controls these simple pages and the TodoMVC filters."),
     );
 }
 
 function NotFoundPage() {
-    return createVDOM("div", { className: "page-card" },
-        createVDOM("h1", {}, "404 - Not Found"),
-        createVDOM("p", {}, "That route does not exist."),
-        createVDOM("button", { className: "page-action", onClick: () => router.navigate("/") }, "Go Home"),
+    return h("div", { className: "page-card" },
+        h("h1", {}, "404 - Not Found"),
+        h("p", {}, "That route does not exist."),
+        h("button", { className: "page-action", onClick: () => router.navigate("/") }, "Go Home"),
     );
 }
 
@@ -100,20 +100,20 @@ function MainContent(state) {
         return true;
     });
 
-    return createVDOM("section", { className: "main" },
+    return h("section", { className: "main" },
         state.todos.length > 0
             ? [
-                createVDOM("input", {
+                h("input", {
                     id: "toggle-all",
                     className: "toggle-all",
                     type: "checkbox",
                     checked: allCompleted,
                     onChange: () => store.dispatch({ type: "TOGGLE_ALL_TODOS" }),
                 }),
-                createVDOM("label", { className: "toggle-all-label", for: "toggle-all" }, "Mark all as complete"),
+                h("label", { className: "toggle-all-label", for: "toggle-all" }, "Mark all as complete"),
             ]
             : null,
-        createVDOM("ul", { className: "todo-list" },
+        h("ul", { className: "todo-list" },
             ...visibleTodos.map((todo, index) => TodoItem(state, todo, index)),
             NewTodoItem(),
         ),
@@ -128,18 +128,18 @@ function Footer(state) {
     const f = state.filter;
     const linkClass = key => [f === key && "selected"].filter(Boolean).join(" ");
 
-    return createVDOM("footer", { className: "footer" },
-        createVDOM("span", { className: "todo-count" },
-            createVDOM("strong", {}, String(activeCount)),
+    return h("footer", { className: "footer" },
+        h("span", { className: "todo-count" },
+            h("strong", {}, String(activeCount)),
             ` ${activeCount === 1 ? "item" : "items"} left`,
         ),
-        createVDOM("ul", { className: "filters" },
+        h("ul", { className: "filters" },
             FilterLink("/todos", "All", linkClass("all")),
             FilterLink("/active", "Active", linkClass("active")),
             FilterLink("/completed", "Completed", linkClass("completed")),
         ),
         completedCount > 0
-            ? createVDOM("button", {
+            ? h("button", {
                 className: "clear-completed",
                 onClick: () => store.dispatch({ type: "CLEAR_COMPLETED" }),
             }, "Clear completed")
@@ -148,8 +148,8 @@ function Footer(state) {
 }
 
 function FilterLink(path, label, className) {
-    return createVDOM("li", {},
-        createVDOM("a", {
+    return h("li", {},
+        h("a", {
             href: `#${path}`,
             className,
             onClick: event => {
@@ -168,9 +168,9 @@ function TodoItem(state, todo, index) {
         `todo-note--${(index % 4) + 1}`,
     ].filter(Boolean).join(" ");
 
-    return createVDOM("li", { className: classNames },
-        createVDOM("div", { className: "view" },
-            createVDOM("input", {
+    return h("li", { className: classNames },
+        h("div", { className: "view" },
+            h("input", {
                 id: `todo-toggle-${todo.id}`,
                 name: `todo-toggle-${todo.id}`,
                 className: "toggle",
@@ -178,17 +178,17 @@ function TodoItem(state, todo, index) {
                 checked: todo.completed,
                 onChange: () => store.dispatch({ type: "TOGGLE_TODO", id: todo.id }),
             }),
-            createVDOM("label", {
+            h("label", {
                 for: `todo-toggle-${todo.id}`,
                 onDblClick: () => store.dispatch({ type: "START_EDITING", id: todo.id }),
             }, todo.title),
-            createVDOM("button", {
+            h("button", {
                 className: "destroy",
                 onClick: () => store.dispatch({ type: "REMOVE_TODO", id: todo.id }),
             }),
         ),
         state.editingTodoId === todo.id
-            ? createVDOM("textarea", {
+            ? h("textarea", {
                 id: `todo-edit-${todo.id}`,
                 name: `todo-edit-${todo.id}`,
                 className: "edit",
@@ -209,8 +209,8 @@ function TodoItem(state, todo, index) {
 }
 
 function NewTodoItem() {
-    return createVDOM("li", { className: "todo-draft" },
-        createVDOM("textarea", {
+    return h("li", { className: "todo-draft" },
+        h("textarea", {
             id: "new-todo",
             name: "new-todo",
             className: "new-todo",
@@ -222,7 +222,7 @@ function NewTodoItem() {
             },
             onKeyDown: handleNewTodoKeyDown,
         }),
-        createVDOM("button", {
+        h("button", {
             className: "add-todo",
             type: "button",
             onClick: () => addTodo(newTodoDraft),
