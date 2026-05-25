@@ -379,16 +379,3 @@ Changes the current hash route. `path` must be a string beginning with `/`.
 
 Low-level event manager helpers exported for completeness. Application views
 usually use `onClick`, `onInput`, and similar virtual node attributes instead.
-
-## Auditor Checklist
-
-From the repository root:
-
-1. Run `npm start`.
-2. Open [http://localhost:8000/](http://localhost:8000/).
-3. Visit `#/todos`, create todos, edit them, toggle them, delete them, clear
-   completed todos, and use `#/active` and `#/completed`.
-4. Inspect the DOM and confirm TodoMVC reference classes and labels are present.
-5. Run `npm test`.
-6. Review `src/framework/` for the four required capabilities and
-   `src/todomvc/` for the integration example.
